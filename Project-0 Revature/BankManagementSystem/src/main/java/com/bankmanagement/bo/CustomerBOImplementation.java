@@ -3,6 +3,7 @@ package com.bankmanagement.bo;
 import java.util.List;
 
 import com.bankmanagement.bankmanagement.Customer;
+import com.bankmanagement.bankmanagement.CustomerTransaction;
 import com.bankmanagement.dao.CustomerDAO;
 import com.bankmanagement.dao.CustomerDAOImp;
 
@@ -41,13 +42,10 @@ public class CustomerBOImplementation implements CustomerBO{
 	}
 
 	@Override
-	public int transfer(long customerAccountNumber, double currentAmount, double debitedAmount, long transaccno,
-			double transcurramount, double transcred) {
+	public List<CustomerTransaction> customerTransaction(long CustomerAccountNumber) {
 		// TODO Auto-generated method stub
 		CustomerDAO udao=new CustomerDAOImp();
-		int status =udao.transfer(customerAccountNumber, currentAmount, debitedAmount, transaccno, transcurramount, transcred);
+		List<CustomerTransaction> status=udao.customerTransaction(CustomerAccountNumber);
 		return status;
 	}
-	
-
 }

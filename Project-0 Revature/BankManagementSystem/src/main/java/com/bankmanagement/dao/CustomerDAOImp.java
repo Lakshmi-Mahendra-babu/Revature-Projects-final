@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.bankmanagement.bankmanagement.Customer;
+import com.bankmanagement.bankmanagement.CustomerTransaction;
 import com.bankmanagement.config.DBConnectionSingleton;
 
 public class CustomerDAOImp implements CustomerDAO{
@@ -36,12 +37,12 @@ public class CustomerDAOImp implements CustomerDAO{
 	@Override
 	public List<Customer> existingCustomer(long  customerAccountNumber) {
 		// TODO Auto-generated method stub
-		List<Customer> listOfemp=null;
+		List<Customer> listOfcus=null;
 		try {
 			Statement stmt=(DBConnectionSingleton.getConnectionInstance()).createStatement();
 
 			ResultSet rs = stmt.executeQuery("select * from customer where CustomerAccountNumber="+customerAccountNumber+"");
-			listOfemp=new ArrayList<Customer>();
+			listOfcus=new ArrayList<Customer>();
 			while(rs.next()) {
 			cust.setCustomerAccountNumber(rs.getLong(1));
 			cust.setCustomerName(rs.getString(2));	
@@ -51,13 +52,13 @@ public class CustomerDAOImp implements CustomerDAO{
 			cust.setCurrentAmount(rs.getDouble(6));
 			cust.setCreditedAmount(rs.getDouble(7));
 			cust.setDebitedAmount(rs.getDouble(8));
-			listOfemp.add(cust);
+			listOfcus.add(cust);
 		}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return listOfemp;
+		return listOfcus;
 	}
 	public int depoist(long customerAccountNumber,double currentAmount,double creditedAmount) {
 		// TODO Auto-generated method stub
@@ -65,7 +66,13 @@ public class CustomerDAOImp implements CustomerDAO{
 		try {
 			
 			Statement stmt1=(DBConnectionSingleton.getConnectionInstance()).createStatement();
-			result = stmt1.executeUpdate("update customer set CurrentAmount="+currentAmount+",CreditedAmount="+creditedAmount+" where CustomerAccountNumber="+customerAccountNumber+"");
+			//currentAmount+=creditedAmount;
+			result = stmt1.executeUpdate("update customer set CurrentAmount="+currentAmount+"+"+creditedAmount+",CreditedAmount="+creditedAmount+" where CustomerAccountNumber="+customerAccountNumber+"");
+			if(result!=0) {
+				Statement stmt3=(DBConnectionSingleton.getConnectionInstance()).createStatement();
+				//currentAmount-=debitedAmount;
+				result = stmt3.executeUpdate("insert into CustomerTransaction(CustomerAccountNumber,CreditedAmount,Balance) values("+customerAccountNumber+","+creditedAmount+","+currentAmount+"+"+creditedAmount+")");
+			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -79,25 +86,12 @@ public class CustomerDAOImp implements CustomerDAO{
 		try {
 			
 			Statement stmt2=(DBConnectionSingleton.getConnectionInstance()).createStatement();
-			result = stmt2.executeUpdate("update customer set CurrentAmount="+currentAmount+",DebitedAmount="+debitedAmount+" where CustomerAccountNumber="+customerAccountNumber+"");
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return result;
-	}
-	public int transfer(long customerAccountNumber,double currentAmount,double debitedAmount,long transaccno,double transcurramount, double transcred) {
-		// TODO Auto-generated method stub
-		int result=0;
-		try {
-			
-			Statement stmt2=(DBConnectionSingleton.getConnectionInstance()).createStatement();
-			result = stmt2.executeUpdate("update customer set CurrentAmount="+currentAmount+",DebitedAmount="+debitedAmount+" where CustomerAccountNumber="+customerAccountNumber+"");
+			//currentAmount-=debitedAmount;
+			result = stmt2.executeUpdate("update customer set CurrentAmount="+currentAmount+"-"+debitedAmount+",DebitedAmount="+debitedAmount+" where CustomerAccountNumber="+customerAccountNumber+"");
 		if(result!=0) {
 			Statement stmt3=(DBConnectionSingleton.getConnectionInstance()).createStatement();
-			result = stmt3.executeUpdate("update customer set CurrentAmount="+transcurramount+",CreditedAmount="+transcred+" where CustomerAccountNumber="+transaccno+"");
-		
+			//currentAmount-=debitedAmount;
+			result = stmt3.executeUpdate("insert into CustomerTransaction(CustomerAccountNumber,DebitedAmount,Balance) values("+customerAccountNumber+","+debitedAmount+","+currentAmount+"-"+debitedAmount+")");
 		}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -107,4 +101,27 @@ public class CustomerDAOImp implements CustomerDAO{
 		return result;
 	}
 
+	@Override
+	public List<CustomerTransaction> customerTransaction(long customerAccountNumber) {
+		// TODO Auto-generated method stub
+		CustomerTransaction cus=new CustomerTransaction();
+		List<CustomerTransaction> listOfcus=null;
+		try {
+			Statement stmt=(DBConnectionSingleton.getConnectionInstance()).createStatement();
+			ResultSet rs = stmt.executeQuery("select * from CustomerTransaction where CustomerAccountNumber="+customerAccountNumber+"");
+			listOfcus=new ArrayList<CustomerTransaction>();
+			while(rs.next()) {
+			cus.setCustomerAccountNumber(rs.getLong(1));
+			//cust.setCustomerName(rs.getString(2));	
+			cus.setCreditedAmount(rs.getDouble(2));
+			cus.setDebitedAmount(rs.getDouble(3));
+			cus.setAmount(rs.getDouble(4));
+			listOfcus.add(cus);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return listOfcus;
+	}
 }

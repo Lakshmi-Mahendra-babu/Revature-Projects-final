@@ -7,8 +7,8 @@ public class Customer {
 	private long MobileNumber;
 	private String Address;
 	private double CurrentAmount;
-	double CreditedAmount;
-	double DebitedAmount;
+	private double CreditedAmount;
+	private double DebitedAmount;
 	public Customer() {
 		super();
 	}

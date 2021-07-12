@@ -5,6 +5,7 @@ import java.util.Scanner;
 import org.apache.log4j.Logger;
 
 import com.bankmanagement.bankmanagement.Customer;
+import com.bankmanagement.bankmanagement.CustomerTransaction;
 import com.bankmanagement.bo.CustomerBO;
 import com.bankmanagement.bo.CustomerBOImplementation;
 
@@ -79,7 +80,6 @@ public class CustomerMain {
 					System.out.println("Enter Deposit Amount:");
 					double deposit=sc.nextDouble();
 					cust.setCreditedAmount(deposit);
-					ccamount+=deposit;
 					int state=cbo.depoist(caccount, ccamount, deposit);
 					if(state!=0) {
 					log.info("Amount Deposited Successfully!");
@@ -91,7 +91,6 @@ public class CustomerMain {
 				case 3:
 					System.out.println("Enter Withdraw Amount:");
 					double withdraw=sc.nextDouble();
-					ccamount-=withdraw;
 					cust.setDebitedAmount(withdraw);
 					int state1=cbo.withdraw(caccount, ccamount, withdraw);
 					if(state1!=0) {
@@ -102,24 +101,40 @@ public class CustomerMain {
 					}
 					break;
 				case 4:
+					System.out.println("Enter transfer account number:");
+					long taccno=sc.nextLong();
 					System.out.println("Enter transfer amount:");
 					double withdraw1=sc.nextDouble();
 					cust.setDebitedAmount(withdraw1);
-					ccamount-=withdraw1;
 					int state2=cbo.withdraw(caccount, ccamount, withdraw1);
 					if(state2!=0) {
-						System.out.println("Enter transfer account number:");
-						long taccno=sc.nextLong();
-						double tcam=c.getCurrentAmount();
-						tcam+=withdraw1;
+						
+						List<Customer> lc1=cbo.existingCustomer(taccno);
+						for(Customer c1:lc1) {
+							double camount=c1.getCurrentAmount();
 						cust.setCreditedAmount(withdraw1);
-						int st=cbo.depoist(taccno, tcam, withdraw1);
+						int st=cbo.depoist(taccno, camount, withdraw1);
 						if(st!=0) {
 							log.info("Amount Transferred Successfully!");
 						}
 						else {
 							log.warn("Amount Transfer Fail!");
-						}
+						}}
+					}
+					break;
+				case 5:
+					CustomerTransaction cus=new CustomerTransaction();
+					cus.setCustomerAccountNumber(caccount);
+					List<CustomerTransaction> lc1=cbo.customerTransaction(caccount);
+					for(CustomerTransaction c3:lc1) {
+						//double ccamount=c.getCurrentAmount();
+				        double ccredit1=c3.getCreditedAmount();
+				        double cdebit1=c3.getDebitedAmount();
+				        System.out.println("CustomerAccountNumber:"+" "+caccount);
+						//System.out.println("CurrentAmount:"+" "+ccamount);
+						System.out.println("CreditedAmount:"+" "+ccredit1);
+						System.out.println("DebitedAmount:"+" "+cdebit1);
+						System.out.println("***********");
 					}
 					break;
 			    default:
